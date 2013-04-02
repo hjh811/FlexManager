@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:supportClasses="com.esri.ags.skins.supportClasses.*" width="400" height="272">
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.utils.JSON;
+			
+			import mx.controls.Alert;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			private var _tbzh:String = null;
+			[Bindable]
+			private var imgurl:String;
+			[Bindable]
+			private var vediourl:String;
+			public function set TBZH(value:String):void
+			{
+				_tbzh =value;
+				if(_tbzh!=null)
+				{
+					var httpservice:HTTPService = new HTTPService;
+					httpservice.url = "http://10.23.108.104/zjb/phone/GetFilesServlet?o=f";
+					httpservice.method = "POST";
+					var param:Object = new Object;
+					param.n=_tbzh;
+					httpservice.addEventListener(ResultEvent.RESULT,resultHandler);
+					httpservice.send(param);
+				}
+			}
+			
+			private function resultHandler(event:ResultEvent):void
+			{
+				if(event.result==null || event.result.toString()=="") return;
+				//Alert.show(event.result.toString());
+				var jsonObject:Object = com.esri.ags.utils.JSON.decode(event.result.toString()) as Object;
+				if(jsonObject==null) return;
+				var jsonValues:Array = jsonObject["values"] as Array;
+				var regE:RegExp=new RegExp("\\\\", "g");
+		
+				
+
+				for(var i:int = 0;i<jsonValues.length;i++)
+				{
+					var fileext:String = jsonValues[i].fileext as String;
+					if(fileext==".JPG")
+					{
+						imgurl ="http://10.23.108.104/attachment/排水口/" +String(jsonValues[i].filepath).replace(regE, "/");
+//						Alert.show(imgurl);
+					}
+					else if(fileext==".mp4")
+					{
+						 vediourl= "http://10.23.108.104/attachment/排水口/" +String(jsonValues[i].filepath).replace(regE, "/");
+					}
+					
+				}
+				
+			}
+			
+			public function get TBZH():String
+			{
+				return _tbzh;
+			}
+		]]>
+	</fx:Script>
+	<mx:TabNavigator width="100%" height="100%" paddingTop="0">
+		<s:NavigatorContent label="图片" width="100%" height="100%" icon="@Embed('assets/images/photo.gif')">
+			<mx:Image id="img" width="100%" height="100%" source="{imgurl}"/>
+			<!--<mx:Image id="img" width="100%" height="100%" source="http://local:8080/attachment/排水口//西航道/西左6+550/DSC05548.JPG"/>-->
+		</s:NavigatorContent>
+		<s:NavigatorContent label="影像" width="100%" height="100%" icon="@Embed('assets/images/film.gif')">
+			<s:VideoPlayer id="video" width="100%" height="100%" autoPlay="false" source="{encodeURI(vediourl)}"/>
+			<!--<s:VideoPlayer id="video" width="100%" height="100%" autoPlay="false" source="{encodeURI('http://local:8080/attachment/排水口//西航道/西左6+550/视频/M4H05693~1.mp4')}"/>-->
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+</s:Group>

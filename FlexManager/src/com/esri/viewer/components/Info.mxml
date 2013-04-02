@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:supportClasses="com.esri.ags.skins.supportClasses.*" width="300" height="280" xmlns:components="com.esri.viewer.components.*">
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+
+			private var _param:Object =null;
+			
+			[Bindable]
+			private var infoDate:Object =null;
+			public function set param(value:Object):void
+			{
+				_param=value;
+				if(_param)
+				{
+					var httpservice:HTTPService = new HTTPService;
+					httpservice.url = _param.servletcontext + "/gis/StatisticServlet";
+					httpservice.addEventListener(ResultEvent.RESULT,resultHandler);
+					httpservice.method = "POST";
+					var obj:Object = new Object;
+					if(_param.layer=="爬梯")
+					{
+
+						obj.s="select HD||A 航道, tbzh 统编桩号,AZSJ 安装时间, YHZT 运行状态  from tab_df_fsssvalue t where fsss = '爬梯' and tbzh = '" +_param.tbzh + "'" ;
+						httpservice.send(obj);
+					}
+					else if(_param.layer=="警示设施")
+					{
+						obj.s="select HD||A 航道, tbzh 统编桩号, cz 材质, AZSJ 安装时间, YHZT 运行状态  from tab_df_fsssvalue t where fsss = '警示设施' and tbzh = '" +_param.tbzh + "'" ;
+						httpservice.send(obj);
+					}
+					else
+					{
+						
+					}
+				}
+			}
+			
+			private function resultHandler(event:ResultEvent):void
+			{
+				if(event.result==null) return;
+				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
+				if(jsonObject==null) return;
+				var jsonValues:Array = jsonObject["values"] as Array;
+				if(jsonValues!=null && jsonValues.length>0)
+				{
+					infoDate = {
+						attributes:jsonValues[0]
+					};
+				}
+			}
+			
+			public function get param():Object
+			{
+				return _param;
+			}
+		]]>
+	</fx:Script>
+	<mx:TabNavigator width="100%" height="100%" paddingTop="0">
+		<s:NavigatorContent label="基本信息" width="100%" height="100%" icon="@Embed('assets/images/photo.gif')">
+			<components:MapInfoControl id="infoControl" width="100%" height="100%" infomark="{infoDate}">
+				
+			</components:MapInfoControl>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="维修记录" width="100%" height="100%" icon="@Embed('assets/images/film.gif')">
+			
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+</s:Group>

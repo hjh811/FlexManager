@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width			="110" 
+	height			="100%"
+
+	backgroundColor="#ffffff"
+	creationComplete="init()"
+	mouseOver		="mouseOverRow()" 
+    mouseOut		="mouseOutRow()" 
+	verticalScrollPolicy="off"
+	horizontalScrollPolicy="off" borderColor="#000000" borderStyle="solid" textAlign="center" buttonMode="true" cornerRadius="8">
+
+<mx:VBox horizontalAlign="center" width="100%" paddingBottom="5" paddingTop="5" paddingLeft="3" paddingRight="3">
+	<mx:Script>
+		<![CDATA[
+			[Bindable]
+			private var _icon:String = "";				
+			[Bindable]
+			private var _title:String;				
+			[Bindable]
+			private var _description:String;
+			[Bindable]
+			private var _service:String;				
+			private var _infoData:Object;
+			[Bindable]
+			private var imgVisible:Boolean = true;
+			
+			public function get infoData():Object
+			{
+				return _infoData;
+			}
+			public function set infoData(value:Object):void
+			{
+				_infoData = value;
+				_icon = infoData.icon;
+				_title= infoData.title;
+				_description = infoData.info;
+				_service = infoData.service;
+			}
+			
+			public function set ImageVisible(value:Boolean):void
+			{
+				imgVisible = value;
+			}
+			
+			private function init():void
+			{
+				this.setStyle("backgroundAlpha", 0.3);
+			}
+			private function mouseOverRow():void
+			{
+				this.setStyle("backgroundAlpha", 0.9);
+			}
+						
+			private function mouseOutRow():void
+			{
+				this.setStyle("backgroundAlpha", 0.3);
+			}
+		]]>
+	</mx:Script>
+		
+		<mx:Label text="{_title}" color="#000000" fontWeight="bold" width="90%" textAlign="center" styleName="InfoTitle" buttonMode	="true"/>
+		<mx:HRule width="90%" height="2" alpha="0.4" styleName="WidgetRule" />
+		<mx:Image source="{_icon}" width="42" height="{imgVisible ? 42 : 0}" visible="{imgVisible}" />
+		<mx:Text id="countText" htmlText="{_description}" textAlign="center" color="#000000" width="90%" styleName="InfoText" buttonMode	="true"/>
+		</mx:VBox>
+</mx:Canvas>

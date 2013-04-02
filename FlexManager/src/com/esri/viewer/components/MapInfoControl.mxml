@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+		   width="244"
+		   height="262"
+		   styleName="WidgetText"
+		   creationComplete="init()"
+		   backgroundColor="#ffffff"
+		   verticalScrollPolicy="off"
+		   horizontalScrollPolicy="off"
+		   cornerRadius="8">
+	<mx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.geometry.Polygon;
+			import com.esri.ags.geometry.Polyline;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+			import com.esri.ags.symbols.SimpleFillSymbol;
+			import com.esri.ags.symbols.SimpleLineSymbol;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.tools.DrawTool;
+			
+			import mx.collections.*;
+			import mx.controls.Alert;
+			import mx.effects.Move;
+			import mx.events.DataGridEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			//import com.esri.solutions.flexviewer.model.LayerConfigItem;
+			//import com.dci.utils.common.StringUtils;
+			//import com.esri.solutions.flexviewer.model.DCIApplication;
+			//import com.dci.gas.forms.DevicePictureWindow;
+
+			[Bindable]
+			private var ainfoAC:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			private var binfoAC:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			private var cinfoAC:ArrayCollection=new ArrayCollection();
+			private var _infoObj:Object;
+			private var attributesObj:Object;
+			private var fieldAliases:Object;
+			public var fieldXML:XML;
+			private var deviceName:String;
+			private var infoConfig:String="com/dci/gas/componets/InfoConfig.xml";
+			//private var layerConfigItem:LayerConfigItem; //图层显示配置对象
+			private var fieldLayout:Object;
+			private var layerURL:String;
+			private var deviceSIDArry:String="";
+			//private var deviceBusinessWindow:DeviceBusinessWindow;
+			//private var devicePictureWindow:DevicePictureWindow;
+			//private var deviceBusinessReportWindow:DeviceBusinessReportWindow;
+
+			private var myVisable:Boolean=true;
+
+			public var isEditStr:String="view";
+
+//			[Embed(source="com/dci/gas/assets/images/icons/image_true.png")]
+//			private var ImgTrue:Class;
+//
+//			[Embed(source="com/dci/gas/assets/images/icons/image_false.png")]
+//			private var ImgFalse:Class;
+
+
+
+			private function init():void
+			{
+				clearArccordBC();
+
+
+			}
+
+			public function get infomark():Object
+			{
+				return _infoObj;
+			}
+
+			//读取字段分组配置文件
+
+			public function set infomark(value:Object):void
+			{
+
+				_infoObj=value;
+				//	fieldXML = infomark.xml;  //获取查询属性配置文件
+				deviceName=infomark.name; //获取查询设备名
+
+
+				//对象属性集合
+				attributesObj=infomark.attributes;
+				//对象别名集合
+				fieldAliases=infomark.fieldAliases;
+
+				//读取属性信息
+				if (deviceName != "阀门" && deviceName != "调压箱" && deviceName != "凝水缸")
+				{
+					myVisable=false;
+
+				}
+				configLoad();
+
+			}
+
+			private function getFieldValue(attrsObj:Object, fAliasname:String, typeGroup:String):void
+			{
+				for (var Aliasname:String in attrsObj)
+				{
+
+				}
+			}
+
+			private function getFieldValueByQueryTask(attrsObj:Object, aliasObj:Object, fAliasname:String, typeGroup:String):void
+			{
+				for (var name:String in attrsObj)
+				{
+					//判断字段分组
+					if (name == fAliasname)
+					{
+						if (typeGroup == "A")
+						{
+							ainfoAC.addItem({"字段名": aliasObj[name], "字段值": attrsObj[name]});
+						}
+						else if (typeGroup == "B")
+						{
+							binfoAC.addItem({"字段名": aliasObj[name], "字段值": attrsObj[name]});
+						}
+						else if (typeGroup == "C")
+						{
+							cinfoAC.addItem({"字段名": aliasObj[name], "字段值": attrsObj[name]});
+						}
+						break;
+					}
+
+				}
+			}
+
+			public function setAttributesByIdentifyTask(attrs:Object):void
+			{
+				var maxlenfield:Number=0;
+				var maxlenvalue:Number=0;
+				ainfoAC.removeAll();
+				binfoAC.removeAll();
+				cinfoAC.removeAll();
+				if (fieldLayout)
+				{
+					var fieldId:String;
+					var fieldGroup:String;
+					var fieldArray:Array;
+					var fieldName:String="";
+					for (var k:* in fieldLayout.fieldGroups)
+					{
+						fieldId=fieldLayout.fieldGroups[k].id;
+					}
+
+				}
+				else
+				{
+					for (var name:String in attrs)
+					{
+//						if(name.charAt(0).toUpperCase()>="A" && name.charAt(0).toUpperCase()<="Z") continue;
+						ainfoAC.addItem({"字段名": name, "字段值": attrs[name]});
+					}
+				}
+
+
+
+
+			}
+
+			public function setAttributesByQueryTask(attrs:Object, Aliases:Object):void
+			{
+				var maxlenfield:Number=0;
+				var maxlenvalue:Number=0;
+				ainfoAC.removeAll();
+				binfoAC.removeAll();
+				cinfoAC.removeAll();
+				if (fieldLayout)
+				{
+					var fieldId:String;
+					var fieldGroup:String;
+					var fieldArray:Array;
+					var fieldName:String="";
+					for (var k:* in fieldLayout.fieldGroups)
+					{
+
+						fieldId=fieldLayout.fieldGroups[k].id;
+//						if (fieldId == "Ainfo")
+//						{
+//							fieldGroup=fieldLayout.fieldGroups[k].fields;
+//							fieldArray=StringUtils.split(fieldGroup, ",");
+//							for (var j:int=0; j < fieldArray.length; j++)
+//							{
+//								fieldName=fieldArray[j];
+//								getFieldValueByQueryTask(attrs, Aliases, fieldName, "A");
+//							}
+//						}
+//						else if (fieldId == "Binfo")
+//						{
+//							fieldGroup=fieldLayout.fieldGroups[k].fields;
+//							fieldArray=StringUtils.split(fieldGroup, ",");
+//							for (var j:int=0; j < fieldArray.length; j++)
+//							{
+//								fieldName=fieldArray[j];
+//								getFieldValueByQueryTask(attrs, Aliases, fieldName, "B");
+//							}
+//						}
+//						else if (fieldId == "Cinfo" && myVisable == false)
+//						{
+//							fieldGroup=fieldLayout.fieldGroups[k].fields;
+//							fieldArray=StringUtils.split(fieldGroup, ",");
+//							for (var j:int=0; j < fieldArray.length; j++)
+//							{
+//								fieldName=fieldArray[j];
+//								getFieldValueByQueryTask(attrs, Aliases, fieldName, "C");
+//							}
+//						}
+					}
+
+				}
+				else
+				{
+					for (var name:String in attrs)
+					{
+//						if(String(Aliases[name]).charAt(0).toUpperCase()>="A" && String(Aliases[name]).charAt(0).toUpperCase()<="Z") continue;
+						ainfoAC.addItem({"字段名": Aliases[name], "字段值": attrs[name]});
+					}
+				}
+
+
+			}
+
+			private function clearArccordBC():void
+			{
+				if (infomark)
+				{
+//					if (binfoAC.length == 0)
+//					{
+//						if (this.Accordion.getChildByName(this.InfoB.name) != null)
+//							this.Accordion.removeChild(this.InfoB);
+//					}
+//					else
+//					{
+//						if (this.Accordion.getChildByName("InfoB") == null)
+//						{
+//							this.Accordion.addChild(this.InfoB);
+//						}
+//					}
+//					if (cinfoAC.length == 0)
+//					{
+//						if (this.Accordion.getChildByName(this.InfoC.name) != null)
+//							this.Accordion.removeChild(this.InfoC);
+//					}
+//					else
+//					{
+//						if (this.Accordion.getChildByName("InfoC") == null)
+//						{
+//							this.Accordion.addChild(this.InfoC);
+//						}
+//					}
+				}
+
+			}
+
+			private function configLoad():void
+			{
+//				if (infoConfig)
+//				{
+//					var configService:HTTPService = new HTTPService();
+//					configService.url = infoConfig;
+//					configService.resultFormat = "e4x";
+//					configService.addEventListener(ResultEvent.RESULT, configResult);
+//					configService.addEventListener(FaultEvent.FAULT, configFault);	
+//					configService.send();
+//				}
+//				layerURL="";
+//				this.layerConfigItem=DCIApplication.getInstance().configManager.layersConfigData.getLayerConfigItemByName(deviceName);
+//				if (layerConfigItem)
+//				{
+//					for (var i:* in layerConfigItem.FieldsLayout.layouts)
+//					{
+//						if (layerConfigItem.FieldsLayout.layouts[i].type == "detail")
+//							fieldLayout=layerConfigItem.FieldsLayout.layouts[i];
+//					}
+//					layerURL=DCIApplication.getInstance().configManager.layersConfigData.getLayerConfigItemByName(deviceName).Layer;
+//				}
+
+
+
+				try
+				{
+					if (fieldAliases)
+					{
+						setAttributesByQueryTask(attributesObj, fieldAliases);
+						deviceSIDArry=attributesObj["OLDNO"];
+					}
+					else
+					{
+						setAttributesByIdentifyTask(attributesObj);
+						deviceSIDArry=attributesObj["编号"];
+					}
+				}
+				catch (error:Error)
+				{
+					Alert.show("A problem occured while parsing the widget configuration file. " + error.message);
+				}
+
+				//ImageBtn.i = "com/esri/solutions/flexviewer/assets/images/widget/open.png";
+
+
+			}
+
+			private function resultHandler(event:ResultEvent):void
+			{
+				var GraphicsBool:Boolean=event.result as Boolean;
+				if (GraphicsBool == true)
+				{
+					//Imgicon = ImgTrue;
+					// ImageBtn2.enabled = false;
+					//  this.iHbox.removeChild(ImageBtn2)
+					//deviceImg.source=ImgTrue
+				}
+				else
+				{
+					//Imgicon = ImgFalse;
+					//ImageBtn1.enabled = false;
+					// this.iHbox.removeChild(ImageBtn1)
+					//deviceImg.source=ImgFalse
+				}
+			}
+
+			//config fault
+			private function configFault(event:mx.rpc.events.FaultEvent):void
+			{
+				var sInfo:String="Error: ";
+				sInfo+="Event Target: " + event.target + "\n\n";
+				sInfo+="Event Type: " + event.type + "\n\n";
+				sInfo+="Fault Code: " + event.fault.faultCode + "\n\n";
+				sInfo+="Fault Info: " + event.fault.faultString;
+				//showError(sInfo);
+				Alert.show(sInfo);
+			}
+
+			//config result
+			private function configResult(event:ResultEvent):void
+			{
+				try
+				{
+					fieldXML=event.result as XML;
+
+					if (fieldAliases)
+					{
+						setAttributesByQueryTask(attributesObj, fieldAliases);
+					}
+					else
+					{
+						setAttributesByIdentifyTask(attributesObj);
+					}
+				}
+				catch (error:Error)
+				{
+					Alert.show("A problem occured while parsing the widget configuration file. " + error.message);
+				}
+			}
+			
+//			private function showImage():void
+//			{
+//				var pictureWindow:PictureWindow = new PictureWindow;
+//				pictureWindow=PictureWindow(PopUpManager.createPopUp(this.parentApplication.parent, PictureWindow, false));
+//				pictureWindow.sendParam(this.infomark.attributes[this.parentApplication.detailField],"");
+//				PopUpManager.centerPopUp(pictureWindow);
+//				
+//			}
+
+
+	
+		]]>
+	</mx:Script>
+	<!--<mx:TabNavigator width="100%"
+					 height="100%">-->
+	<mx:VBox width="100%"
+			 height="100%">
+			<mx:DataGrid 
+						 id="ainfoGrid"
+						 width="100%"
+						 height="100%"
+						 alternatingItemColors="[#e6eaed, #FFFFFF]"
+						 dataProvider="{ainfoAC}">
+				<mx:columns>
+					<mx:DataGridColumn headerText="字段名" width="90"
+									   dataField="字段名"/>
+					<mx:DataGridColumn headerText="字段值"
+									   dataField="字段值"/>
+				</mx:columns>
+			</mx:DataGrid>
+		<!--<mx:HBox id="iHbox" width="100%" height="10%" horizontalAlign="center">
+			<mx:Image id="deviceImg"  source="@Embed(source='image/SLFlex/icons/image_true.png')" width="20" height="20" buttonMode="true" useHandCursor="true" click="showImage()"/>
+		</mx:HBox>-->
+	</mx:VBox>
+	<!--<mx:VBox label="维修记录" width="100%" height="100%"/> 
+	</mx:TabNavigator>-->
+</mx:Canvas>
