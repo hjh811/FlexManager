@@ -33,6 +33,8 @@
     </fx:Metadata>
     <fx:Script>
         <![CDATA[
+			import com.esri.ags.skins.ScaleBarSkin;
+			import com.esri.ags.components.ScaleBar;
 			import com.esri.viewer.components.ImageMedioInfo;
 			import com.esri.viewer.components.Info;
 			import com.esri.ags.layers.OpenStreetMapLayer;
@@ -176,6 +178,9 @@
 			private var clickGraphicsLayer:GraphicsLayer;
 			private var graphicsLayer:GraphicsLayer;
 			private var geometryService:GeometryService;
+			private var scalrbar:ScaleBar;
+			private var scalebarSkin:ScaleBarSkin;
+		
 			private var servletcontext:String;
             private function this_creationCompleteHandler():void
             {

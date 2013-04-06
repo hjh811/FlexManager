@@ -15,7 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////
 package com.esri.viewer.managers
 {
-
+ 
 import com.esri.viewer.AppEvent;
 import com.esri.viewer.ConfigData;
 
