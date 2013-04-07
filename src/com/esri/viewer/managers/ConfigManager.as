@@ -66,17 +66,42 @@ import mx.utils.StringUtil;
 public class ConfigManager extends EventDispatcher
 {
     private const CONFIG_MANAGER:String = "ConfigManager";
-
+	
+	private var _userServiceConfig:Boolean = false;
+    public function set UseServiceConfig(value:Boolean):void
+	{
+		this._userServiceConfig = value;
+		AppEvent.addListener(ViewerContainer.CONTAINER_INITIALIZED, containerInitializedHandler);
+	}
+	
+	public function get UseServiceConfig():Boolean
+	{
+		return this._userServiceConfig;
+	}
+	
     public function ConfigManager()
     {
         //make sure the container is properly initialized and then
         //proceed with configuration initialization.
-        AppEvent.addListener(ViewerContainer.CONTAINER_INITIALIZED, containerInitializedHandler);
+//        AppEvent.addListener(ViewerContainer.CONTAINER_INITIALIZED, containerInitializedHandler);
     }
 
     private function containerInitializedHandler(event:Event):void
     {
-        loadConfig();
+		if(_userServiceConfig)
+		{
+			//使用服务端配置
+			var configService:HTTPService = new HTTPService();
+			configService.url = "http://local:8080/zjb/gis/getconfig?u=-1";
+			configService.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
+			configService.addEventListener(ResultEvent.RESULT, configService_resultHandler);
+			configService.addEventListener(FaultEvent.FAULT, configService_faultHandler);
+			configService.send();
+		}
+		else
+		{
+        	loadConfig();
+		}
     }
 
     private function loadConfig():void
