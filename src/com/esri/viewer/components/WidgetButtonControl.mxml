@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
 	width			="110" 
-	height			="100%"
+	height			="95"
 
 	backgroundColor="#ffffff"
 	creationComplete="init()"
 	mouseOver		="mouseOverRow()" 
     mouseOut		="mouseOutRow()" 
 	verticalScrollPolicy="off"
-	horizontalScrollPolicy="off" borderColor="#000000" borderStyle="solid" textAlign="center" buttonMode="true" cornerRadius="8">
+	horizontalScrollPolicy="off" borderColor="#000000" borderStyle="solid" textAlign="center" buttonMode="true" cornerRadius="8" >
 
-<mx:VBox horizontalAlign="center" width="100%" paddingBottom="5" paddingTop="5" paddingLeft="3" paddingRight="3">
+<mx:VBox horizontalAlign="center" width="100%" paddingBottom="5" paddingTop="5" paddingLeft="3" paddingRight="3" height="95">
 	<mx:Script>
 		<![CDATA[
 			[Bindable]
