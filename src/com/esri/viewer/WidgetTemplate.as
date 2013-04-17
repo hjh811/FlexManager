@@ -21,6 +21,7 @@ import com.esri.viewer.components.TitlebarButton;
 import flash.events.Event;
 import flash.events.MouseEvent;
 
+import mx.controls.Alert;
 import mx.controls.Image;
 import mx.core.FlexGlobals;
 import mx.core.UIComponent;
@@ -496,11 +497,13 @@ public class WidgetTemplate extends SkinnableContainer implements IWidgetTemplat
         {
             if ((stage.mouseX - parent.x) > minimumResizeWidth)
             {
-                width = (stage.mouseX - parent.x);
+//				Alert.show(FlexGlobals.topLevelApplication.width);
+//				Alert.show(ViewerContainer.getInstance().width.toString());
+                width = (stage.mouseX - parent.x - (FlexGlobals.topLevelApplication.width - ViewerContainer.getInstance().width));
             }
             if ((stage.mouseY - parent.y) > minimumResizeHeight)
             {
-                height = (stage.mouseY - parent.y);
+                height = (stage.mouseY - parent.y - (FlexGlobals.topLevelApplication.height - ViewerContainer.getInstance().height) + 10);
             }
         }
     }
@@ -512,6 +515,8 @@ public class WidgetTemplate extends SkinnableContainer implements IWidgetTemplat
         const minimumResizeHeight:Number = minHeight ? minHeight : 100;
 
         var nextWidth:Number = stage.stageWidth - (stage.mouseX + parent.x);
+		Alert.show(stage.stageWidth.toString());
+		Alert.show(ViewerContainer.getInstance().width.toString());
         var nextHeight:Number = (stage.mouseY - parent.y);
 
         if (stage.mouseX > 20 && (stage.mouseY < stage.height - 20))
