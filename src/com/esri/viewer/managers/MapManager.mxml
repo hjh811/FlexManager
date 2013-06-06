@@ -33,6 +33,7 @@
     </fx:Metadata>
     <fx:Script>
         <![CDATA[
+			import com.esri.viewer.components.ZKInfo;
 			import com.esri.ags.skins.ScaleBarSkin;
 			import com.esri.ags.components.ScaleBar;
 			import com.esri.viewer.components.ImageMedioInfo;
@@ -182,6 +183,7 @@
 			private var scalebarSkin:ScaleBarSkin;
 		
 			private var servletcontext:String;
+			private var allIds:Array = new Array;
             private function this_creationCompleteHandler():void
             {
                 m_osmCopyrightManager = new OpenStreetMapCopyrightManager(map);
@@ -202,8 +204,8 @@
                 if (instance === map)
                 {
                     var cssStyleDeclaration:CSSStyleDeclaration = styleManager.getStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindow")
-//                    cssStyleDeclaration.setStyle("backgroundColor", getStyle('contentBackgroundColor'));
-//                    styleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindow", cssStyleDeclaration, true);
+                    cssStyleDeclaration.setStyle("backgroundColor", getStyle('contentBackgroundColor'));
+                    styleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindow", cssStyleDeclaration, true);
                 }
             }
 
@@ -326,8 +328,15 @@
 				geometryService.addEventListener(GeometryServiceEvent.AREAS_AND_LENGTHS_COMPLETE,geometryService_areasAndLengthsCompleteHandler);
 				geometryService.addEventListener(GeometryServiceEvent.LENGTHS_COMPLETE,lengthsCompleteHandler);
 				this.servletcontext = m_configData.configXML.servletcontext;
+				
+				var strId:String = m_configData.configXML.identifyIds
+				var array:Array = strId.split(",");
+				for(var j:int=0;j<array.length;j++)
+				{
+					allIds.push(Number(array[j]));
+				}
 				//图文交互注册方法
-				ExternalInterface.addCallback("CenterToXY", CenterToXY);
+//				ExternalInterface.addCallback("CenterToXY", CenterToXY);
 //				ExternalInterface.addCallback("ZoomToZH", ZoomToZH);
 //				ExternalInterface.addCallback("ZoomToByUrl", ZoomToByUrl);
 				
@@ -359,7 +368,7 @@
 			}
 			
 			private var layerName:String = "";
-			private function ZoomToByUrl(value:String):void
+			public function ZoomToByUrl(value:String):void
 			{
 //				Alert.show(value);
 				if(value!=null)
@@ -430,6 +439,10 @@
 							map.infoWindow.content = imageMedioInfo;
 							imageMedioInfo.TBZH = zoomGra.attributes["TBZH"];
 						}
+						else
+						{
+							var mapinfoControl:MapInfoControl
+						}
 						
 						map.infoWindow.label = " " + layerName+":" + zoomGra.attributes["TBZH"];
 						map.infoWindow.show(zoomGra.geometry as MapPoint);
@@ -458,26 +471,26 @@
 			
 			private function completeHander(event:QueryEvent):void
 			{
-				if(event.featureSet.features.length>0)
-				{
-					var graphic:Graphic = event.featureSet.features[0];
-					this.map.infoWindow.label = graphic.attributes["TBZH"];
-					this.map.infoWindow.show(graphic.geometry as MapPoint);
-					this.map.centerAt(graphic.geometry as MapPoint);
-				}
+//				if(event.featureSet.features.length>0)
+//				{
+//					var graphic:Graphic = event.featureSet.features[0];
+//					this.map.infoWindow.label = graphic.attributes["TBZH"];
+//					this.map.infoWindow.show(graphic.geometry as MapPoint);
+//					this.map.centerAt(graphic.geometry as MapPoint);
+//				}
 			}
 			
 			private var infoPo:InfoPopup =null;
-			private function ZoomToZH(zh:String,layer:String):void
+			public function ZoomToZH(zh:String,layer:String):void
 			{
-				var queryTask:QueryTask = new QueryTask;
-				queryTask.url ="http://localhost/ArcGIS/rest/services/DFZTT/MapServer/6";
-				var query:Query = new Query;
-				query.where = "TBZH = '" + zh+ "'";
-				query.outFields = ["*"];
-				query.returnGeometry = true;
-				queryTask.addEventListener(QueryEvent.EXECUTE_COMPLETE, completeHander);
-				queryTask.execute(query);
+//				var queryTask:QueryTask = new QueryTask;
+//				queryTask.url ="http://localhost/ArcGIS/rest/services/DFZTT/MapServer/6";
+//				var query:Query = new Query;
+//				query.where = "TBZH = '" + zh+ "'";
+//				query.outFields = ["*"];
+//				query.returnGeometry = true;
+//				queryTask.addEventListener(QueryEvent.EXECUTE_COMPLETE, completeHander);
+//				queryTask.execute(query);
 			}
 
             private function configMapAttributes():void
@@ -1634,14 +1647,24 @@
             }
 
 			private var infoControl:MapInfoControl = new MapInfoControl;
-			private var identifyTask:IdentifyTask = new IdentifyTask;
+			
 			private function map_clickHandler(event:MapMouseEvent):void
 			{
-				var layer:ArcGISDynamicMapServiceLayer = this.map.getLayer("堤防专题图") as ArcGISDynamicMapServiceLayer;
+				var layer:ArcGISDynamicMapServiceLayer = null;
+				for each(var l:Layer in this.map.layers)
+				{
+				    if(l is ArcGISDynamicMapServiceLayer)
+					{
+						layer= l as ArcGISDynamicMapServiceLayer;
+						break;
+					}
+				}
+				if(layer == null)  return;
+				var identifyTask:IdentifyTask = new IdentifyTask;
 				identifyTask.url = layer.url;
 				var identifyParams:IdentifyParameters = new IdentifyParameters();
 				identifyParams.returnGeometry = true;
-				identifyParams.tolerance = 8;
+				identifyParams.tolerance = 7;
 				identifyParams.width = this.map.width;
 				identifyParams.height = this.map.height;
 				identifyParams.geometry = event.mapPoint;
@@ -1649,8 +1672,9 @@
 				identifyParams.layerOption = "all";
 				var visiblelayer:ArrayCollection = layer.visibleLayers;
 				if(visiblelayer==null) return;
+				
 				var layerIds:Array = new Array;
-				var allIds:Array = [0,1,2,3,5];
+				
 				for(var i:int=0;i<visiblelayer.length;i++)
 				{
 					if(allIds.indexOf(int(visiblelayer.getItemAt(i)))!=-1)
@@ -1659,6 +1683,7 @@
 					}
 				}
 //				Alert.show(layerIds.toString());
+				
 				identifyParams.layerIds = layerIds;
 				identifyParams.spatialReference = this.map.spatialReference;
 				var clickGraphic:Graphic = new Graphic(event.mapPoint);
@@ -1729,6 +1754,17 @@
 							map.infoWindow.content = dMInfo;
 							dMInfo.param ={layer:result.layerName,tbzh:result.feature.attributes["TBZH"],servletcontext:this.servletcontext}
 						}
+						else if(result.layerName == "地质钻孔")
+						{
+							var zkInfo:ZKInfo = new ZKInfo;
+							this.map.infoWindow.content = zkInfo;
+							zkInfo.param = {layer:result.layerName,infomark:clickGraphic.attributes,servletcontext:this.servletcontext}
+						}
+//						else
+//						{
+//							this.map.infoWindow.content = infoControl;
+//							infoControl.infomark = clickGraphic.attributes;
+//						}
 						
 						this.map.infoWindow.label = result.layerName+":"+ result.feature.attributes[result.displayFieldName];
 //						this.map.infoWindow.removeEventListener(MouseEvent.CLICK, windowShowHandler);
@@ -1737,8 +1773,7 @@
 //						{
 //							infoControl.img.source = "";
 //						}
-//						this.map.infoWindow.content = infoControl;
-//						infoControl.infomark = clickGraphic.attributes;
+
 						this.map.infoWindow.show(clickGraphic.geometry as MapPoint);
 //						infoControl.infoData = clickGraphic.attributes;
 					}

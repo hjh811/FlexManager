@@ -100,13 +100,13 @@
 				attributesObj=infomark.attributes;
 				//对象别名集合
 				fieldAliases=infomark.fieldAliases;
-
+				myVisable=false;
 				//读取属性信息
-				if (deviceName != "阀门" && deviceName != "调压箱" && deviceName != "凝水缸")
-				{
-					myVisable=false;
-
-				}
+//				if (deviceName != "阀门" && deviceName != "调压箱" && deviceName != "凝水缸")
+//				{
+//					
+//
+//				}
 				configLoad();
 
 			}
@@ -167,8 +167,8 @@
 				{
 					for (var name:String in attrs)
 					{
-//						if(name.charAt(0).toUpperCase()>="A" && name.charAt(0).toUpperCase()<="Z") continue;
-						ainfoAC.addItem({"字段名": name, "字段值": attrs[name]});
+						if(name.charAt(0).toUpperCase()>="A" && name.charAt(0).toUpperCase()<="Z") continue;
+							ainfoAC.addItem({"字段名": name, "字段值": attrs[name]});
 					}
 				}
 
@@ -231,7 +231,7 @@
 				{
 					for (var name:String in attrs)
 					{
-//						if(String(Aliases[name]).charAt(0).toUpperCase()>="A" && String(Aliases[name]).charAt(0).toUpperCase()<="Z") continue;
+						if(String(Aliases[name]).charAt(0).toUpperCase()>="A" && String(Aliases[name]).charAt(0).toUpperCase()<="Z") continue;
 						ainfoAC.addItem({"字段名": Aliases[name], "字段值": attrs[name]});
 					}
 				}
@@ -301,12 +301,12 @@
 					if (fieldAliases)
 					{
 						setAttributesByQueryTask(attributesObj, fieldAliases);
-						deviceSIDArry=attributesObj["OLDNO"];
+//						deviceSIDArry=attributesObj["OLDNO"];
 					}
 					else
 					{
 						setAttributesByIdentifyTask(attributesObj);
-						deviceSIDArry=attributesObj["编号"];
+//						deviceSIDArry=attributesObj["编号"];
 					}
 				}
 				catch (error:Error)

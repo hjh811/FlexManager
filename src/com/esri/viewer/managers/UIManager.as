@@ -252,23 +252,23 @@ public class UIManager extends EventDispatcher
         cssStyleDeclarationInfoContainer.setStyle("borderSkin",null);
         cssStyleDeclarationInfoContainer.setStyle("infoOffsetX",-45);
         */
-//        if (numberOfStyleColors > 4)
-//        {
-////            cssStyleDeclarationInfoContainer.setStyle("backgroundColor", backgroundColor);
-//            cssStyleDeclarationInfoContainer.setStyle("borderColor", textColor);
-//        }
-//        else
-//        {
-//            cssStyleDeclarationInfoContainer.setStyle("borderColor", defaultTextColor);
-//        }
-//        cssStyleDeclarationInfoContainer.setStyle("borderThickness", 1);
-//        cssStyleDeclarationInfoContainer.setStyle("backgroundAlpha", styleAlpha);
-//        topLevelStyleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindow", cssStyleDeclarationInfoContainer, false);
-//
-//        var cssStyleDeclarationInfoWindowLabel:CSSStyleDeclaration = topLevelStyleManager.getStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindowLabel");
-//        cssStyleDeclarationInfoWindowLabel.setStyle("fontSize", fontSize);
-//        cssStyleDeclarationInfoWindowLabel.setStyle("fontFamily", fontName);
-//        topLevelStyleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindowLabel", cssStyleDeclarationInfoWindowLabel, false);
+        if (numberOfStyleColors > 4)
+        {
+//            cssStyleDeclarationInfoContainer.setStyle("backgroundColor", backgroundColor);
+            cssStyleDeclarationInfoContainer.setStyle("borderColor", textColor);
+        }
+        else
+        {
+            cssStyleDeclarationInfoContainer.setStyle("borderColor", defaultTextColor);
+        }
+        cssStyleDeclarationInfoContainer.setStyle("borderThickness", 1);
+        cssStyleDeclarationInfoContainer.setStyle("backgroundAlpha", styleAlpha);
+        topLevelStyleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindow", cssStyleDeclarationInfoContainer, false);
+
+        var cssStyleDeclarationInfoWindowLabel:CSSStyleDeclaration = topLevelStyleManager.getStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindowLabel");
+        cssStyleDeclarationInfoWindowLabel.setStyle("fontSize", fontSize);
+        cssStyleDeclarationInfoWindowLabel.setStyle("fontFamily", fontName);
+        topLevelStyleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindowLabel", cssStyleDeclarationInfoWindowLabel, false);
 //
 //        var cssStyleDeclarationInfoSymbolWindow:CSSStyleDeclaration = topLevelStyleManager.getStyleDeclaration("com.esri.ags.components.supportClasses.InfoSymbolWindow");
 //        if (numberOfStyleColors > 4)

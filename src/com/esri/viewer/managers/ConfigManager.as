@@ -100,7 +100,7 @@ public class ConfigManager extends EventDispatcher
         var configService:HTTPService = new HTTPService();
         configService.url = ViewerContainer.configFile;
         configService.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
-        configService.addEventListener(ResultEvent.RESULT, configService_resultHandler);
+        configService.addEventListener(ResultEvent.RESULT, configService_resultHandler); 
         configService.addEventListener(FaultEvent.FAULT, configService_faultHandler);
         configService.send();
     }

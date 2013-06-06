@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:supportClasses="com.esri.ags.skins.supportClasses.*" width="300" height="280" xmlns:components="com.esri.viewer.components.*">
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+
+			private var _param:Object =null;
+			
+			[Bindable]
+			private var imgurl:String;
+			private var url:String;
+			[Bindable]
+			private var infoDate:Object =null;
+			public function set param(value:Object):void
+			{
+				_param=value;
+				if(_param)
+				{
+					if(_param.infomark!=null)
+					{
+						infoDate = _param.infomark;
+						var tpm:String = _param.infomark.attributes["图片名"];
+						var gcmc:String =  _param.infomark.attributes["工程名称"];
+						if(tpm!=null && gcmc!=null)
+						{
+							var array:Array = _param.infomark.attributes["图片名"].toString().split(",");
+							if(array.length>0)
+							{
+								imgurl = "http://10.23.108.104/attachment/地质钻孔/" + gcmc + "/"  + array[0];
+								url = "/attachment/地质钻孔/" + gcmc + "/"  + array[0];
+							}
+						}
+					}
+//					var httpservice:HTTPService = new HTTPService;
+//					httpservice.url = _param.servletcontext + "/gis/StatisticServlet";
+//					httpservice.addEventListener(ResultEvent.RESULT,resultHandler);
+//					httpservice.method = "POST";
+//					var obj:Object = new Object;
+////					if(_param.layer=="爬梯")
+////					{
+////
+////						obj.s="select HD||A 航道, tbzh 统编桩号,AZSJ 安装时间, YHZT 运行状态  from tab_df_fsssvalue t where fsss = '爬梯' and tbzh = '" +_param.tbzh + "'" ;
+////						httpservice.send(obj);
+////					}
+////					else if(_param.layer=="警示设施")
+////					{
+////						obj.s="select HD||A 航道, tbzh 统编桩号, cz 材质, AZSJ 安装时间, YHZT 运行状态  from tab_df_fsssvalue t where fsss = '警示设施' and tbzh = '" +_param.tbzh + "'" ;
+////						httpservice.send(obj);
+////					}
+//				    if(_param.layer=="横断面")
+//					{
+//						obj.s="select * from tab_df_hdmview t where 统编桩号 = '" +_param.tbzh + "'" ;
+//						httpservice.send(obj);
+//					}
+				}
+			}
+			
+			private function resultHandler(event:ResultEvent):void
+			{
+//				if(event.result==null) return;
+//				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
+//				if(jsonObject==null) return;
+//				var jsonValues:Array = jsonObject["values"] as Array;
+//				if(jsonValues!=null && jsonValues.length>0)
+//				{
+//					infoDate = {
+//						attributes:jsonValues[0]
+//					};
+//					imgurl = "http://10.23.108.104/attachment/竣工图/" + jsonValues[0]["堤防段代码"] + "/"+ jsonValues[0]["图纸号"] + ".jpg";
+//					url = "/attachment/竣工图/" + jsonValues[0]["堤防段代码"] + "/"+ jsonValues[0]["图纸号"] + ".jpg";
+//				}
+			}
+			
+			public function get param():Object
+			{
+				return _param;
+			} 
+
+			protected function showpic(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				ExternalInterface.call("showjungongtu",url);
+			}
+
+		]]>
+	</fx:Script>
+	<mx:TabNavigator width="100%" height="100%" paddingTop="0">
+		<s:NavigatorContent label="基本信息" width="100%" height="100%" icon="@Embed('assets/images/photo.gif')">
+			<components:MapInfoControl id="infoControl" width="100%" height="100%" infomark="{infoDate}">
+				
+			</components:MapInfoControl>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="钻孔柱状图" width="100%" height="100%" icon="@Embed('assets/images/film.gif')">
+			<mx:Image id="img" width="100%" height="100%" source="{imgurl}"  click="showpic(event)" useHandCursor="true" buttonMode="true"/> 
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+</s:Group>

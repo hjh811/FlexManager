@@ -104,10 +104,10 @@ public class CostumTiledMapServiceLayer extends TiledMapServiceLayer
     //  - needed if Map doesn't have it set
     //----------------------------------
 
-//    override public function get units():String
-//    {
-//        return com.esri.ags.Units.METERS;
-//    }
+    override public function get units():String
+    {
+        return com.esri.ags.Units.METERS;
+    }
 
     //--------------------------------------------------------------------------
     //
