@@ -27,25 +27,29 @@
 
     <fx:Script>
         <![CDATA[
-            import com.esri.ags.Map;
-            import com.esri.ags.layers.supportClasses.LayerInfoWindowRenderer;
-            import com.esri.viewer.AppEvent;
-            import com.esri.viewer.ConfigData;
-            import com.esri.viewer.IBaseWidget;
-            import com.esri.viewer.IInfowindowTemplate;
-            import com.esri.viewer.IWidgetContainer;
-            import com.esri.viewer.WidgetStates;
-            import com.esri.viewer.utils.Hashtable;
-
-            import mx.core.IVisualElement;
-            import mx.core.UIComponent;
-            import mx.events.ModuleEvent;
-            import mx.managers.HistoryManager;
-            import mx.managers.IFocusManagerComponent;
-            import mx.modules.IModuleInfo;
-            import mx.modules.ModuleManager;
-
-            import spark.components.Group;
+			import com.esri.ags.Map;
+			import com.esri.ags.layers.supportClasses.LayerInfoWindowRenderer;
+			import com.esri.viewer.AppEvent;
+			import com.esri.viewer.ConfigData;
+			import com.esri.viewer.IBaseWidget;
+			import com.esri.viewer.IInfowindowTemplate;
+			import com.esri.viewer.IWidgetContainer;
+			import com.esri.viewer.ViewerContainer;
+			import com.esri.viewer.WidgetStates;
+			import com.esri.viewer.utils.Hashtable;
+			
+			import mx.core.IVisualElement;
+			import mx.core.UIComponent;
+			import mx.events.ModuleEvent;
+			import mx.managers.HistoryManager;
+			import mx.managers.IFocusManagerComponent;
+			import mx.modules.IModuleInfo;
+			import mx.modules.ModuleManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			import spark.components.Group;
 
             private const WIDGET_MANAGER:String = "WidgetManager";
 
@@ -446,6 +450,20 @@
                 widget.setState(WidgetStates.WIDGET_OPENED);
                 widget.addEventListener(MouseEvent.MOUSE_DOWN, onWidgetMouseDown);
                 wgtContainer.addWidget(widget);
+				
+				var userObject:Object = ViewerContainer.getInstance().userObject;
+				if(userObject!=null && userObject.useService== true)  
+				{
+					var httpLog:HTTPService = new HTTPService;
+					httpLog.url = "../../gis/logservlet" ;  //功能访问日志
+					httpLog.addEventListener(ResultEvent.RESULT,LogResultHandler);
+					httpLog.addEventListener(FaultEvent.FAULT,LogFaultHandler);
+					httpLog.method = "POST";
+					var params:Object = new Object;
+					params.label = widget.widgetTitle;
+					params.u = userObject.userID;
+					httpLog.send(params);
+				}
             }
 
             private function runWidget(widgetId:Number):void
@@ -519,7 +537,22 @@
 
                 var id:Number = moduleInfo.data.id;
                 runWidget(id);
+
             }
+			
+			private function LogResultHandler(event:ResultEvent):void
+			{
+//				var httpLog:HTTPService = event.currentTarget as HTTPService;
+//				httpLog.removeEventListener(ResultEvent.RESULT,LogResultHandler);
+//				httpLog.removeEventListener(FaultEvent.FAULT,LogFaultHandler);
+			}
+			
+			private function LogFaultHandler(event:FaultEvent):void
+			{
+//				var httpLog:HTTPService = event.currentTarget as HTTPService;
+//				httpLog.removeEventListener(ResultEvent.RESULT,LogResultHandler);
+//				httpLog.removeEventListener(FaultEvent.FAULT,LogFaultHandler);
+			}
 
             private function setAutoXY():void
             {
