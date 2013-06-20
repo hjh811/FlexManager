@@ -234,7 +234,7 @@
                     {
                         if (event.detail == Alert.YES)
                         {
-                            navigateToURL(new URLRequest("http://help.arcgis.com/en/webapps/flexviewer/"));
+//                            navigateToURL(new URLRequest("http://help.arcgis.com/en/webapps/flexviewer/"));
                         }
                     }, StaticLayer_m_esriLogo, Alert.NO);
                     // restore labels to normal
@@ -1702,25 +1702,25 @@
 						
 						map.infoWindow.hide();
 						
-//						switch (resultGraphic.geometry.type)
-//						{
-//							case Geometry.MAPPOINT:
-//							{
-////								resultGraphic.symbol = smsIdentify;
-//								break;
-//							}
-//							case Geometry.POLYLINE:
-//							{
-////								resultGraphic.symbol = slsIdentify;
-//								break;
-//							}
-//							case Geometry.POLYGON:
-//							{
-////								resultGraphic.symbol = sfsIdentify;
-//								break;
-//							}
-//						}
-
+						switch (resultGraphic.geometry.type)
+						{
+							case Geometry.MAPPOINT:
+							{
+								resultGraphic.symbol = sms;
+								break;
+							}
+							case Geometry.POLYLINE:
+							{
+								resultGraphic.symbol = sls;
+								break;
+							}
+							case Geometry.POLYGON:
+							{
+								resultGraphic.symbol = sfs;
+								break;
+							}
+						}
+						this.graphicsLayer.add(resultGraphic);
 //						this.clickGraphicsLayer.add(resultGraphic);
 //						var clickGraphic:Graphic = new Graphic(clickGeo);
 						clickGraphic.attributes = {
@@ -1775,6 +1775,7 @@
 //						}
 
 						this.map.infoWindow.show(clickGraphic.geometry as MapPoint);
+						break;
 //						infoControl.infoData = clickGraphic.attributes;
 					}
 				}
@@ -2073,7 +2074,7 @@
 		</esri:SimpleMarkerSymbol>
 		
 		<!-- Symbol for lines -->
-		<esri:SimpleLineSymbol id="sls" style="solid" color="0x0000FF" width="3"/>
+		<esri:SimpleLineSymbol id="sls" style="solid" color="0x00ffff" width="5"/>
 		<esri:SimpleLineSymbol id="highline" style="solid" color="0x00ffff" width="3"/>
 		
 		<!-- Symbol for polygons -->

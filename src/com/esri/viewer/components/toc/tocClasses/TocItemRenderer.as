@@ -105,7 +105,7 @@ public class TocItemRenderer extends TreeItemRenderer
             _layerMenuImage.width = 11;
             _layerMenuImage.setStyle("verticalAlign", "middle");
             _layerMenuImage.buttonMode = true;
-//            addChild(_layerMenuImage);  //取消详细按钮的
+            addChild(_layerMenuImage);  //取消详细按钮的
             this._layerMenuImage.addEventListener(MouseEvent.CLICK, onLayerMenuImageClick);
             this._layerMenuImage.addEventListener(MouseEvent.DOUBLE_CLICK, onLayerMenuImageDoubleClick);
         }
