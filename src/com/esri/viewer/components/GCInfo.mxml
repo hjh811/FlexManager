@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:supportClasses="com.esri.ags.skins.supportClasses.*" width="300" height="280" xmlns:components="com.esri.viewer.components.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.utils.URLUtil;
+
+			
+			private var _param:Object =null;
+			[Bindable]
+			private var infoData:Object =null;
+			[Bindable]
+			private var attachData:Object = null;
+			
+			public var attachcontext:String = "http://172.16.49.124/attachment/" 
+			public function set param(value:Object):void
+			{
+				infoData = value;
+				_param=value;
+				if(_param)
+				{
+					attachcontext = "http://" + URLUtil.getServerNameWithPort(_param.servletcontext) + "/attachment/";
+//					Alert.show(attachurl);
+					var httpservice:HTTPService = new HTTPService;
+					httpservice.url = _param.servletcontext + "/gis/StatisticServlet";
+					httpservice.addEventListener(ResultEvent.RESULT,resultHandler);
+					httpservice.method = "POST";
+					var obj:Object = new Object;
+					obj.s="select t1.id, t1.gcmc 工程名称, t1.erbsin 地震基本烈度, t1.dkcl 堤防级别,t2.bnscbgpl 工程地点, t2.bnscenpl 工程终点,t2.BNSCLN 堤岸长度, t2.JMBNTPEL 堤顶高程  from tab_df_ybxxb t1, tab_df_dfjbqkb t2 where t1.id = t2.id and t1.valid = 1 and t1.txglh = '" +_param.txglh + "'" ;
+					httpservice.send(obj);
+					
+
+					var httpAttachment:HTTPService = new HTTPService;
+					httpAttachment.url = _param.servletcontext + "/gis/StatisticServlet";
+					httpAttachment.addEventListener(ResultEvent.RESULT,attachmentHandler);
+					httpAttachment.method = "POST";
+					var objParam:Object = new Object;
+					objParam.s = "select * from VIEW_GIS_DF_ATTACHMENT where txglh = '" + _param.txglh + "'";
+					httpAttachment.send(objParam);	
+				}
+			}
+			
+			private function resultHandler(event:ResultEvent):void
+			{
+				if(event.result==null|| event.result=="") return;
+				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
+				if(jsonObject==null) return;
+				var jsonValues:Array = jsonObject["values"] as Array;
+				if(jsonValues!=null && jsonValues.length>0)
+				{
+					infoData = {
+						attributes:jsonValues[0]
+					};
+				}
+			}
+			
+			private function attachmentHandler(event:ResultEvent):void
+			{
+				if(event.result==null|| event.result=="") return;
+				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
+				if(jsonObject==null) return;
+				var jsonValues:Array = jsonObject["values"] as Array;
+				if(jsonValues!=null && jsonValues.length>0)
+				{
+					attachData = jsonValues;
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	<mx:TabNavigator width="100%" height="100%" paddingTop="0">
+		<s:NavigatorContent label="基本信息" width="100%" height="100%" >
+			<components:MapInfoControl id="infoControl" width="100%" height="100%" infomark="{infoData}">
+				
+			</components:MapInfoControl>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="竣工图纸" width="100%" height="100%" >
+			<mx:DataGrid id="attachDataGrid" width="100%" height="100%" dataProvider="{attachData}" alternatingItemColors="[#e6eaed, #FFFFFF]">
+				<mx:columns>
+					<mx:DataGridColumn dataField="attachment" headerText="附件">
+						<mx:itemRenderer>
+							<fx:Component>
+								<mx:LinkButton label="{data.attachment}" textAlign="left" click="linkbutton1_clickHandler(event)" >
+									<fx:Script>
+										<![CDATA[
+											import flash.net.navigateToURL;
+											protected function linkbutton1_clickHandler(event:MouseEvent):void
+											{
+												navigateToURL(new URLRequest(outerDocument.attachcontext  + data.uri),"_blank");
+											}
+										]]>
+									</fx:Script>
+								</mx:LinkButton>
+								
+							</fx:Component>
+						</mx:itemRenderer>
+					</mx:DataGridColumn>
+				</mx:columns>
+			</mx:DataGrid>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+</s:Group>

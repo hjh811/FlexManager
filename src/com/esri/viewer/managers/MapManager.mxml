@@ -33,6 +33,7 @@
     </fx:Metadata>
     <fx:Script>
         <![CDATA[
+			import com.esri.viewer.components.GCInfo;
 			import com.esri.viewer.components.ZKInfo;
 			import com.esri.ags.skins.ScaleBarSkin;
 			import com.esri.ags.components.ScaleBar;
@@ -439,6 +440,16 @@
 							map.infoWindow.content = imageMedioInfo;
 							imageMedioInfo.TBZH = zoomGra.attributes["TBZH"];
 						}
+						else if(layerName== "堤岸工程划分")
+						{
+							if(zoomGra.attributes["txglh"]!=null)
+							{
+							var gcInfo:GCInfo = new GCInfo;
+							
+							map.infoWindow.content = gcInfo;
+							gcInfo.param = {layer:layerName,txglh:zoomGra.attributes["txglh"],servletcontext:this.servletcontext};
+							}
+					    }
 						else
 						{
 							var mapinfoControl:MapInfoControl
@@ -1748,6 +1759,12 @@
 							map.infoWindow.content = info;
 							info.param ={layer:result.layerName,tbzh:result.feature.attributes["TBZH"],servletcontext:this.servletcontext}
 						}
+						else if(result.layerName == "责任标示牌")
+						{
+							var infoBsp:Info = new Info;
+							map.infoWindow.content = infoBsp;
+							infoBsp.param ={layer:result.layerName,tbzh:result.feature.attributes["统编桩号"],servletcontext:this.servletcontext}
+						}
 						else if(result.layerName =="横断面")
 						{
 							var dMInfo:DMInfo = new DMInfo;
@@ -1759,6 +1776,16 @@
 							var zkInfo:ZKInfo = new ZKInfo;
 							this.map.infoWindow.content = zkInfo;
 							zkInfo.param = {layer:result.layerName,infomark:clickGraphic.attributes,servletcontext:this.servletcontext}
+						}
+						else if(result.layerName== "堤岸工程划分")
+						{
+							if(result.feature.attributes.TXGLH!=null)
+							{
+								var gcInfo:GCInfo = new GCInfo;
+								
+								map.infoWindow.content = gcInfo;
+								gcInfo.param = {layer:layerName,txglh:result.feature.attributes.TXGLH,servletcontext:this.servletcontext};
+							}
 						}
 //						else
 //						{
