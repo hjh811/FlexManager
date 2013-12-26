@@ -16,7 +16,7 @@
 			[Bindable]
 			private var attachData:Object = null;
 			
-			public var attachcontext:String = "http://172.16.49.124/attachment/" 
+			public var attachcontext:String = "http://10.23.108.104/attachment/";
 			public function set param(value:Object):void
 			{
 				infoData = value;

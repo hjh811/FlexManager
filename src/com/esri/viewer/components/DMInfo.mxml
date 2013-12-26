@@ -7,8 +7,12 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import com.esri.viewer.utils.IconUtility;
+			
+			import mx.managers.PopUpManager;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
+			import mx.utils.URLUtil;
 
 			private var _param:Object =null;
 			
@@ -17,11 +21,15 @@
 			private var url:String;
 			[Bindable]
 			private var infoDate:Object =null;
+			public var attachcontext:String = "http://10.23.108.104/attachment/";
+			
 			public function set param(value:Object):void
 			{
 				_param=value;
 				if(_param)
 				{
+					attachcontext = "http://" + URLUtil.getServerNameWithPort(_param.servletcontext) + "/attachment/";
+					
 					var httpservice:HTTPService = new HTTPService;
 					httpservice.url = _param.servletcontext + "/gis/StatisticServlet";
 					httpservice.addEventListener(ResultEvent.RESULT,resultHandler);
@@ -42,6 +50,14 @@
 					{
 						obj.s="select * from tab_df_hdmview t where 统编桩号 = '" +_param.tbzh + "'" ;
 						httpservice.send(obj);
+						
+						var http:HTTPService = new HTTPService;
+						http.url = _param.servletcontext + "/gis/StatisticServlet";
+						http.addEventListener(ResultEvent.RESULT,zpresultHandler);
+						http.method = "POST";
+						var objp:Object = new Object;
+						objp.s="select * from tab_df_file_dazp t where name = '" +_param.tbzh + "'  " ;
+						http.send(objp);
 					}
 				}
 			}
@@ -57,7 +73,7 @@
 					infoDate = {
 						attributes:jsonValues[0]
 					};
-					imgurl = "http://10.23.108.104/attachment/竣工图/" + jsonValues[0]["堤防段代码"] + "/"+ jsonValues[0]["图纸号"] + ".jpg";
+					imgurl = attachcontext + "/竣工图/" + jsonValues[0]["堤防段代码"] + "/"+ jsonValues[0]["图纸号"] + ".jpg";
 					url = "/attachment/竣工图/" + jsonValues[0]["堤防段代码"] + "/"+ jsonValues[0]["图纸号"] + ".jpg";
 				}
 			}
@@ -72,10 +88,55 @@
 				// TODO Auto-generated method stub
 				ExternalInterface.call("showjungongtu",url);
 			}
+			
+			[Bindable]
+			private var picurl:String;
+			private function zpresultHandler(event:ResultEvent):void
+			{
+				if(event.result==null) return;
+				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
+				if(jsonObject==null) return;
+				var jsonValues:Array = jsonObject["values"] as Array;
+				if(jsonValues!=null && jsonValues.length>0)
+				{
+					
+					//					zp.visible=true;
+					picurl=attachcontext + "/堤岸图片/"+jsonValues[0].name+"/"+jsonValues[0].filename;
+					imagesArray = jsonValues;
+					var nav:NavigatorContent=new NavigatorContent;
+					nav.icon = IconUtility.getClass(nav,"assets/images/photo.gif",18,18);
+					nav.label="实景照片";
+					nav.percentWidth=100;
+					nav.percentHeight=100;
+					//					nav.icon="assets/images/film.gif";
+					var image1:Image=new Image();
+					image1.percentHeight=100;
+					image1.percentWidth=100;
+					image1.source=picurl;
+					image1.addEventListener(MouseEvent.MOUSE_DOWN,showimg);
+					nav.addElement(image1);	
+					tab.addElement(nav);
+				}
+				
+			}
+			
+			private var imagesArray:Array;
+			protected function showimg(event:MouseEvent):void
+			{
+				if(imagesArray.length>0)
+				{
+					var window:PictureWindow = new PictureWindow();
+					window.attachcontext = attachcontext;
+					window.images = imagesArray;
+					PopUpManager.addPopUp(window,this.parentApplication.parent,true);
+					PopUpManager.centerPopUp(window);
+				}
+				
+			}
 
 		]]>
 	</fx:Script>
-	<mx:TabNavigator width="100%" height="100%" paddingTop="0">
+	<mx:TabNavigator  id="tab"  width="100%" height="100%" paddingTop="0">
 		<s:NavigatorContent label="基本信息" width="100%" height="100%" icon="@Embed('assets/images/photo.gif')">
 			<components:MapInfoControl id="infoControl" width="100%" height="100%" infomark="{infoDate}">
 				

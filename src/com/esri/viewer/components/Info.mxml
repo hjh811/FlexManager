@@ -40,6 +40,16 @@
 						obj.s="select HD||A 航道, tbzh 统编桩号, cz 材质, AZSJ 安装时间, YHZT 运行状态  from tab_df_fsssvalue t where fsss = '责任标示牌' and tbzh = '" +_param.tbzh + "'" ;
 						httpservice.send(obj);
 					}
+					else if(_param.layer=="救生圈")
+					{
+						obj.s="select HD||A 航道, tbzh 统编桩号, cz 材质, AZSJ 安装时间, YHZT 运行状态  from tab_df_fsssvalue t where fsss = '救生设施' and tbzh = '" +_param.tbzh + "'" ;
+						httpservice.send(obj);
+					}
+					else if(_param.layer=="亲水设施")
+					{
+						obj.s="select AX 岸线, HD 航道, HZQY 行政区域, TBZH 统编桩号,  PTMC 平台名称,PTLX 平台类型, PTJG 平台结构,YWHL 有无护栏, SFFBGL 是否封闭管理, YWJSSS 有无警示设施, DBJHXBJ 大步级或小步级, SFTCKC 是否停船靠船, TJLBYWLG 梯级两边有无栏杆 from TAB_DF_QSSS where valid=1 and TBZH = '" +_param.tbzh + "'"
+						httpservice.send(obj);
+					}
 					else
 					{
 						

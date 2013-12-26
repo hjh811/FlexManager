@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:supportClasses="com.esri.ags.skins.supportClasses.*" horizontalAlign="center" verticalAlign="middle" width="400" height="272">
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.utils.JSON;
+			
+			import mx.managers.PopUpManager;
+			import mx.controls.Alert;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.utils.URLUtil;
+			[Bindable]
+			private var imgurl:String;
+			private var _param:Object =null;
+			public var attachcontext:String = "http://10.23.108.104/attachment/";
+			[Bindable]
+			private var infoData:Object =null;
+			[Bindable]
+			private var attachData:Object = null;
+				
+			public function set param(value:Object):void
+			{
+				infoData = value;
+				_param=value;
+				if(_param)
+				{
+					attachcontext = "http://" + URLUtil.getServerNameWithPort(_param.servletcontext) + "/attachment/";
+					var httpservice:HTTPService = new HTTPService;
+					httpservice.url = _param.servletcontext + "/gis/StatisticServlet";
+					httpservice.addEventListener(ResultEvent.RESULT,resultHandler);
+					httpservice.method = "POST";
+					var obj:Object = new Object;
+					obj.s="select * from tab_df_file_dazp t where name = '" + _param.tbzh +"'" ;
+					httpservice.send(obj);
+				}
+			}
+			
+			private function resultHandler(event:ResultEvent):void
+			{
+				if(event.result==null || event.result.toString()=="") return;
+				//Alert.show(event.result.toString());
+				var jsonObject:Object = com.esri.ags.utils.JSON.decode(event.result.toString()) as Object;
+				if(jsonObject==null) return;
+				var jsonValues:Array = jsonObject["values"] as Array;
+				var regE:RegExp=new RegExp("\\\\", "g");
+				imagesArray = jsonValues;
+				
+				
+				for(var i:int = 0;i<jsonValues.length;i++)
+				{
+					var fileext:String = jsonValues[i].fileext as String;
+					imgurl =attachcontext +"/堤岸图片/" +String(jsonValues[i].filepath).replace(regE, "/");
+					break;
+				}
+				
+			}
+			
+
+			private var imagesArray:Array;
+			protected function showPicWindow(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(imagesArray.length>0)
+				{
+					var window:PictureWindow = new PictureWindow();
+					window.attachcontext = attachcontext;
+					window.images = imagesArray;
+					PopUpManager.addPopUp(window,this.parentApplication.parent,true);
+					PopUpManager.centerPopUp(window);
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle">
+		<mx:Image id="img" width="100%" height="100%" source="{imgurl}" click="showPicWindow(event)"/>
+	</s:HGroup>
+</s:HGroup>
+

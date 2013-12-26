@@ -23,7 +23,7 @@
                    xmlns:s="library://ns.adobe.com/flex/spark"
                    xmlns:mx="library://ns.adobe.com/flex/mx"
                    xmlns:esri="http://www.esri.com/2008/ags"
-                   width="150" height="105"
+                   width="150" height="83"
                    backgroundColor="{getStyle('contentBackgroundColor')}"
                    borderColor="{getStyle('accentColor')}"
                    initialize="bordercontainer1_initializeHandler(event)"
@@ -114,8 +114,8 @@
                         }
                     }
                     // based on layer type, add Description/Download label
-                    this.descriptionOrDownloadLabel.text = layer is KMLLayer ? resourceManager.getString("ViewerStrings", "tocMapLayerDownloadLabel") : resourceManager.getString("ViewerStrings", "tocMapLayerDescriptionLabel");
-                    this.descriptionOrDownloadLabel.enabled = !(layer is FeatureLayer && FeatureLayer(layer).featureCollection);
+//                    this.descriptionOrDownloadLabel.text = layer is KMLLayer ? resourceManager.getString("ViewerStrings", "tocMapLayerDownloadLabel") : resourceManager.getString("ViewerStrings", "tocMapLayerDescriptionLabel");
+//                    this.descriptionOrDownloadLabel.enabled = !(layer is FeatureLayer && FeatureLayer(layer).featureCollection);
                     
                     if (!layer.initialExtent)
                     {
@@ -386,7 +386,7 @@
         </s:HGroup>
         -->
     </s:VGroup>
-    <mx:HRule width="100%"
+	<!--<mx:HRule width="100%"
               strokeColor="{getStyle('accentColor')}"
               visible="{midGroup.visible}"/>
     <s:VGroup id="bottomGroup"
@@ -403,5 +403,5 @@
                      rollOut="label_rollOutHandler(event)"
                      rollOver="label_rollOverHandler(event)"/>
         </s:HGroup>
-    </s:VGroup>
+    </s:VGroup>-->
 </s:BorderContainer>

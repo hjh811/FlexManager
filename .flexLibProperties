@@ -2,6 +2,7 @@
 <flexLibProperties includeAllClasses="true" version="3">
   <includeClasses>
     <classEntry path="com.esri.viewer.components.GCInfo"/>
+    <classEntry path="com.esri.viewer.components.PictureInfo"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

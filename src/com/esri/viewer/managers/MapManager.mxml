@@ -33,6 +33,7 @@
     </fx:Metadata>
     <fx:Script>
         <![CDATA[
+			import com.esri.viewer.components.PictureInfo;
 			import com.esri.viewer.components.GCInfo;
 			import com.esri.viewer.components.ZKInfo;
 			import com.esri.ags.skins.ScaleBarSkin;
@@ -185,6 +186,8 @@
 		
 			private var servletcontext:String;
 			private var allIds:Array = new Array;
+			private var layerDictionary:Dictionary = new Dictionary;
+			
             private function this_creationCompleteHandler():void
             {
                 m_osmCopyrightManager = new OpenStreetMapCopyrightManager(map);
@@ -197,8 +200,33 @@
                 AppEvent.addListener(AppEvent.MAP_RESIZE, mapResizeHandler);
                 AppEvent.addListener(AppEvent.DATA_OPT_LAYERS, dataOptLayersHandler);
                 AppEvent.addListener(AppEvent.MAP_LAYER_VISIBLE, mapLayerVisibleHandler);
+				
+				
+				var layernConfigService:HTTPService = new HTTPService();
+				layernConfigService.url = "widgets/widgetsConfig/LayerConfig.xml";
+				layernConfigService.resultFormat = HTTPService.RESULT_FORMAT_E4X;
+				layernConfigService.addEventListener(ResultEvent.RESULT, layerConfigService_resultHandler); 
+				layernConfigService.addEventListener(FaultEvent.FAULT, layerConfigService_faultHandler);
+				layernConfigService.send();
             }
+			
+			private function layerConfigService_resultHandler(event:ResultEvent):void
+			{
+//				Alert.show(event.result.toString());
+				var layerxml:XML = event.result as XML;
+				var layerList:XMLList = layerxml.layer;
+				for each(var objxml:XML in layerList)
+				{
+					var layerName:String = objxml.@layerName;
+					this.layerDictionary[layerName] = objxml;
+				}
+			}
 
+			private function layerConfigService_faultHandler(event:FaultEvent):void
+			{
+				Alert.show(event.fault.toString());
+			}
+			
             protected override function partAdded(partName:String, instance:Object):void
             {
                 super.partAdded(partName, instance);
@@ -352,21 +380,21 @@
 //				httpservice.send(p);
             }
 			
-			private function resultHandler(event:ResultEvent):void
-			{
-				if(event.result==null) return;
-				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
-				if(jsonObject==null) return;
-				var jsonValues:Array = jsonObject["values"] as Array;
-				
-				if(jsonValues!=null && jsonValues.length>1)
-				{
-					if(jsonValues[0]["c"] != "0" || jsonValues[1]["c"] != "0")
-					{
-						Alert.show("您有待处理业务:巡查共"+ jsonValues[0]["c"] + "条,违章共" + jsonValues[1]["c"] + "条","提醒");
-					}
-				}
-			}
+//			private function resultHandler(event:ResultEvent):void
+//			{
+//				if(event.result==null) return;
+//				var jsonObject:Object = JSON.parse(event.result.toString()) as Object;
+//				if(jsonObject==null) return;
+//				var jsonValues:Array = jsonObject["values"] as Array;
+//				
+//				if(jsonValues!=null && jsonValues.length>1)
+//				{
+//					if(jsonValues[0]["c"] != "0" || jsonValues[1]["c"] != "0")
+//					{
+//						Alert.show("您有待处理业务:巡查共"+ jsonValues[0]["c"] + "条,违章共" + jsonValues[1]["c"] + "条","提醒");
+//					}
+//				}
+//			}
 			
 			private var layerName:String = "";
 			public function ZoomToByUrl(value:String):void
@@ -876,105 +904,105 @@
                         map.addLayer(featureLayer);
                         break;
                     }
-                    case "bing":
-                    {
-                        var veTiledLayer:VETiledLayer = new VETiledLayer();
-                        veTiledLayer.id = label;
-                        veTiledLayer.name = label;
-                        veTiledLayer.key = bingMapKey;
-                        veTiledLayer.visible = visible;
-                        veTiledLayer.alpha = alpha;
-                        if (style)
-                        {
-                            veTiledLayer.mapStyle = style;
-                        }
-                        if (culture)
-                        {
-                            veTiledLayer.culture = culture;
-                        }
-                        if (displayLevels)
-                        {
-                            veTiledLayer.displayLevels = displayLevels.split(",");
-                            for (i = 0; i < veTiledLayer.displayLevels.length; i++)
-                            {
-                                veTiledLayer.displayLevels[i] = Number(veTiledLayer.displayLevels[i]); // convert to Numbers
-                            }
-                        }
-                        layerObject.layer = veTiledLayer;
-                        veTiledLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
-                        veTiledLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
-                        map.addLayer(veTiledLayer);
-                        break;
-                    }
-                    case "image":
-                    {
-                        var imgLayer:ArcGISImageServiceLayer = new ArcGISImageServiceLayer(url);
-                        imgLayer.id = label;
-                        imgLayer.name = label;
-                        imgLayer.alpha = alpha;
-                        imgLayer.token = token;
-                        imgLayer.visible = visible;
-                        imgLayer.noData = noData;
-                        imgLayer.useMapTime = useMapTime;
-                        if (imageFormat)
-                        {
-                            imgLayer.imageFormat = imageFormat;
-                        }
-                        if (bandIds)
-                        {
-                            imgLayer.bandIds = bandIds.split(",");
-                            for (i = 0; i < imgLayer.bandIds.length; i++)
-                            {
-                                imgLayer.bandIds[i] = Number(imgLayer.bandIds[i]); // convert to Numbers
-                            }
-                        }
-                        if (proxyUrl && useProxy)
-                        {
-                            imgLayer.proxyURL = proxyUrl;
-                        }
-                        layerObject.layer = imgLayer;
-                        imgLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
-                        imgLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
-                        map.addLayer(imgLayer);
-                        break;
-                    }
-                    case "arcims":
-                    {
-                        var arcimsLayer:ArcIMSMapServiceLayer = new ArcIMSMapServiceLayer();
-                        arcimsLayer.alpha = alpha;
-                        arcimsLayer.id = label;
-                        arcimsLayer.name = label;
-                        arcimsLayer.visible = visible;
-                        arcimsLayer.serviceHost = serviceHost;
-                        arcimsLayer.serviceName = serviceName;
-                        if (autoRefresh > 0)
-                        {
-                            setInterval(arcimsLayer.refresh, autoRefresh * 1000);
-                        }
-                        if (imageFormat)
-                        {
-                            arcimsLayer.imageFormat = imageFormat;
-                        }
-                        if (visibleLayers)
-                        {
-                            var visLayers:Array = visibleLayers.split(",");
-                            arcimsLayer.visibleLayers = new ArrayCollection(visLayers);
-                        }
-                        if (proxyUrl && useProxy)
-                        {
-                            arcimsLayer.proxyURL = proxyUrl;
-                        }
-                        if (username && password)
-                        {
-                            arcimsLayer.username = username;
-                            arcimsLayer.password = password;
-                        }
-                        layerObject.layer = arcimsLayer;
-                        arcimsLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
-                        arcimsLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
-                        map.addLayer(arcimsLayer);
-                        break;
-                    }
+//                    case "bing":
+//                    {
+//                        var veTiledLayer:VETiledLayer = new VETiledLayer();
+//                        veTiledLayer.id = label;
+//                        veTiledLayer.name = label;
+//                        veTiledLayer.key = bingMapKey;
+//                        veTiledLayer.visible = visible;
+//                        veTiledLayer.alpha = alpha;
+//                        if (style)
+//                        {
+//                            veTiledLayer.mapStyle = style;
+//                        }
+//                        if (culture)
+//                        {
+//                            veTiledLayer.culture = culture;
+//                        }
+//                        if (displayLevels)
+//                        {
+//                            veTiledLayer.displayLevels = displayLevels.split(",");
+//                            for (i = 0; i < veTiledLayer.displayLevels.length; i++)
+//                            {
+//                                veTiledLayer.displayLevels[i] = Number(veTiledLayer.displayLevels[i]); // convert to Numbers
+//                            }
+//                        }
+//                        layerObject.layer = veTiledLayer;
+//                        veTiledLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
+//                        veTiledLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
+//                        map.addLayer(veTiledLayer);
+//                        break;
+//                    }
+//                    case "image":
+//                    {
+//                        var imgLayer:ArcGISImageServiceLayer = new ArcGISImageServiceLayer(url);
+//                        imgLayer.id = label;
+//                        imgLayer.name = label;
+//                        imgLayer.alpha = alpha;
+//                        imgLayer.token = token;
+//                        imgLayer.visible = visible;
+//                        imgLayer.noData = noData;
+//                        imgLayer.useMapTime = useMapTime;
+//                        if (imageFormat)
+//                        {
+//                            imgLayer.imageFormat = imageFormat;
+//                        }
+//                        if (bandIds)
+//                        {
+//                            imgLayer.bandIds = bandIds.split(",");
+//                            for (i = 0; i < imgLayer.bandIds.length; i++)
+//                            {
+//                                imgLayer.bandIds[i] = Number(imgLayer.bandIds[i]); // convert to Numbers
+//                            }
+//                        }
+//                        if (proxyUrl && useProxy)
+//                        {
+//                            imgLayer.proxyURL = proxyUrl;
+//                        }
+//                        layerObject.layer = imgLayer;
+//                        imgLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
+//                        imgLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
+//                        map.addLayer(imgLayer);
+//                        break;
+//                    }
+//                    case "arcims":
+//                    {
+//                        var arcimsLayer:ArcIMSMapServiceLayer = new ArcIMSMapServiceLayer();
+//                        arcimsLayer.alpha = alpha;
+//                        arcimsLayer.id = label;
+//                        arcimsLayer.name = label;
+//                        arcimsLayer.visible = visible;
+//                        arcimsLayer.serviceHost = serviceHost;
+//                        arcimsLayer.serviceName = serviceName;
+//                        if (autoRefresh > 0)
+//                        {
+//                            setInterval(arcimsLayer.refresh, autoRefresh * 1000);
+//                        }
+//                        if (imageFormat)
+//                        {
+//                            arcimsLayer.imageFormat = imageFormat;
+//                        }
+//                        if (visibleLayers)
+//                        {
+//                            var visLayers:Array = visibleLayers.split(",");
+//                            arcimsLayer.visibleLayers = new ArrayCollection(visLayers);
+//                        }
+//                        if (proxyUrl && useProxy)
+//                        {
+//                            arcimsLayer.proxyURL = proxyUrl;
+//                        }
+//                        if (username && password)
+//                        {
+//                            arcimsLayer.username = username;
+//                            arcimsLayer.password = password;
+//                        }
+//                        layerObject.layer = arcimsLayer;
+//                        arcimsLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
+//                        arcimsLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
+//                        map.addLayer(arcimsLayer);
+//                        break;
+//                    }
                     case "wms":
                     {
                         var wmsLayer:WMSLayer = new WMSLayer(url);
@@ -1023,37 +1051,37 @@
                         map.addLayer(wmsLayer);
                         break;
                     }
-                    case "osm":
-                    {
-                        var osmLayer:OpenStreetMapLayer = new OpenStreetMapLayer();
-                        osmLayer.alpha = alpha;
-                        osmLayer.id = label;
-                        osmLayer.name = label;
-                        osmLayer.visible = visible;
-                        layerObject.layer = osmLayer;
-                        osmLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
-                        osmLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
-                        map.addLayer(osmLayer);
-                        break;
-                    }
-                    case "kml":
-                    {
-                        var kmlLayer:KMLLayer = new KMLLayer(url);
-                        kmlLayer.addEventListener(FlexEvent.HIDE, kmlLayer_hideHandler);
-                        kmlLayer.alpha = alpha;
-                        kmlLayer.id = label;
-                        kmlLayer.name = label;
-                        if (serviceURL)
-                        {
-                            kmlLayer.serviceURL = serviceURL;
-                        }
-                        kmlLayer.visible = visible;
-                        layerObject.layer = kmlLayer;
-                        kmlLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
-                        kmlLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
-                        map.addLayer(kmlLayer);
-                        break;
-                    }
+//                    case "osm":
+//                    {
+//                        var osmLayer:OpenStreetMapLayer = new OpenStreetMapLayer();
+//                        osmLayer.alpha = alpha;
+//                        osmLayer.id = label;
+//                        osmLayer.name = label;
+//                        osmLayer.visible = visible;
+//                        layerObject.layer = osmLayer;
+//                        osmLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
+//                        osmLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
+//                        map.addLayer(osmLayer);
+//                        break;
+//                    }
+//                    case "kml":
+//                    {
+//                        var kmlLayer:KMLLayer = new KMLLayer(url);
+//                        kmlLayer.addEventListener(FlexEvent.HIDE, kmlLayer_hideHandler);
+//                        kmlLayer.alpha = alpha;
+//                        kmlLayer.id = label;
+//                        kmlLayer.name = label;
+//                        if (serviceURL)
+//                        {
+//                            kmlLayer.serviceURL = serviceURL;
+//                        }
+//                        kmlLayer.visible = visible;
+//                        layerObject.layer = kmlLayer;
+//                        kmlLayer.addEventListener(LayerEvent.LOAD_ERROR, layer_loadErrorEvent);
+//                        kmlLayer.addEventListener(LayerEvent.LOAD, layer_loadEvent);
+//                        map.addLayer(kmlLayer);
+//                        break;
+//                    }
 					case "custom":
 					{
 						var costmTileLayer:CostumTiledMapServiceLayer = new	CostumTiledMapServiceLayer(url);
@@ -1634,7 +1662,7 @@
 								status: status,
 								handler:LengthDrawEnd
 						}
-						ViewerContainer.dispatchEvent(new AppEvent(AppEvent.SET_MAP_ACTION, lengthdata));
+						AppEvent.dispatch(AppEvent.SET_MAP_ACTION, lengthdata);
 							break;
 						case "area":
 							var areadata:Object =
@@ -1643,7 +1671,7 @@
 								status: status,
 								handler:AreaDrawEnd
 						}
-							ViewerContainer.dispatchEvent(new AppEvent(AppEvent.SET_MAP_ACTION, areadata));
+							AppEvent.dispatch(AppEvent.SET_MAP_ACTION, areadata);
 							break;
                         default:
                         {
@@ -1746,54 +1774,120 @@
 						
 						
 						map.infoWindow.content = null;
-						if(result.layerName =="排水口")
+						var layerXML:XML = this.layerDictionary[result.layerName];
+						if(layerXML!=null)
 						{
-							
-							var imageMedioInfo:ImageMedioInfo = new ImageMedioInfo;
-							map.infoWindow.content = imageMedioInfo;
-							imageMedioInfo.TBZH = result.feature.attributes["TBZH"];
-						}
-						else if(result.layerName =="爬梯" || result.layerName =="警示设施")
-						{
-							var info:Info = new Info;
-							map.infoWindow.content = info;
-							info.param ={layer:result.layerName,tbzh:result.feature.attributes["TBZH"],servletcontext:this.servletcontext}
-						}
-						else if(result.layerName == "责任标示牌")
-						{
-							var infoBsp:Info = new Info;
-							map.infoWindow.content = infoBsp;
-							infoBsp.param ={layer:result.layerName,tbzh:result.feature.attributes["统编桩号"],servletcontext:this.servletcontext}
-						}
-						else if(result.layerName =="横断面")
-						{
-							var dMInfo:DMInfo = new DMInfo;
-							map.infoWindow.content = dMInfo;
-							dMInfo.param ={layer:result.layerName,tbzh:result.feature.attributes["TBZH"],servletcontext:this.servletcontext}
-						}
-						else if(result.layerName == "地质钻孔")
-						{
-							var zkInfo:ZKInfo = new ZKInfo;
-							this.map.infoWindow.content = zkInfo;
-							zkInfo.param = {layer:result.layerName,infomark:clickGraphic.attributes,servletcontext:this.servletcontext}
-						}
-						else if(result.layerName== "堤岸工程划分")
-						{
-							if(result.feature.attributes.TXGLH!=null)
+							var layerCode:String = layerXML.@code;
+							if(layerCode=="layer001")
 							{
-								var gcInfo:GCInfo = new GCInfo;
-								
-								map.infoWindow.content = gcInfo;
-								gcInfo.param = {layer:layerName,txglh:result.feature.attributes.TXGLH,servletcontext:this.servletcontext};
+								var imageMedioInfo:ImageMedioInfo = new ImageMedioInfo;
+								map.infoWindow.content = imageMedioInfo;
+								imageMedioInfo.TBZH = result.feature.attributes[layerXML.@queryField];
+							}
+							else if(layerCode=="layer002" || layerCode=="layer003" || layerCode=="layer009"  || layerCode=="layer010")
+							{
+								var info:Info = new Info;
+								map.infoWindow.content = info;
+								info.param ={layer:result.layerName,tbzh:result.feature.attributes[layerXML.@queryField],servletcontext:this.servletcontext};
+							}
+							else if(layerCode=="layer007")
+							{
+								var infoBsp:Info = new Info;
+								map.infoWindow.content = infoBsp;
+								infoBsp.param ={layer:result.layerName,tbzh:result.feature.attributes[layerXML.@queryField],servletcontext:this.servletcontext}
+							}
+							else if(layerCode=="layer004")
+							{
+								var dMInfo:DMInfo = new DMInfo;
+								map.infoWindow.content = dMInfo;
+								dMInfo.param ={layer:result.layerName,tbzh:result.feature.attributes[layerXML.@queryField],servletcontext:this.servletcontext};
+							}
+							else if(layerCode=="layer008")
+							{
+								var zkInfo:ZKInfo = new ZKInfo;
+								this.map.infoWindow.content = zkInfo;
+								zkInfo.param = {layer:result.layerName,infomark:clickGraphic.attributes,servletcontext:this.servletcontext}
+							}
+							else if(layerCode=="layer005")
+							{
+								if(result.feature.attributes.TXGLH!=null)
+								{
+									var gcInfo:GCInfo = new GCInfo;
+									
+									map.infoWindow.content = gcInfo;
+									gcInfo.param = {layer:layerName,txglh:result.feature.attributes[layerXML.@queryField],servletcontext:this.servletcontext};
+								}
+							}
+							else if(layerCode=="layer006")
+							{
+								if(result.feature.attributes[result.displayFieldName]!=null)
+								{
+									var pictureInfo:PictureInfo = new PictureInfo;
+									map.infoWindow.content = pictureInfo;
+									pictureInfo.param ={layer:result.layerName,tbzh:result.feature.attributes[layerXML.@queryField],servletcontext:this.servletcontext}
+								}
 							}
 						}
+//						if(result.layerName =="排水口")
+//						{
+//							
+//							var imageMedioInfo:ImageMedioInfo = new ImageMedioInfo;
+//							map.infoWindow.content = imageMedioInfo;
+//							imageMedioInfo.TBZH = result.feature.attributes["TBZH"];
+//						}
+//						else if(result.layerName =="爬梯" || result.layerName =="警示设施")
+//						{
+//							var info:Info = new Info;
+//							map.infoWindow.content = info;
+//							info.param ={layer:result.layerName,tbzh:result.feature.attributes["TBZH"],servletcontext:this.servletcontext}
+//						}
+//						else if(result.layerName == "责任标示牌")
+//						{
+//							var infoBsp:Info = new Info;
+//							map.infoWindow.content = infoBsp;
+//							infoBsp.param ={layer:result.layerName,tbzh:result.feature.attributes["统编桩号"],servletcontext:this.servletcontext}
+//						}
+//						else if(result.layerName =="横断面")
+//						{
+//							var dMInfo:DMInfo = new DMInfo;
+//							map.infoWindow.content = dMInfo;
+//							dMInfo.param ={layer:result.layerName,tbzh:result.feature.attributes["TBZH"],servletcontext:this.servletcontext}
+//						}
+//						else if(result.layerName == "地质钻孔")
+//						{
+//							var zkInfo:ZKInfo = new ZKInfo;
+//							this.map.infoWindow.content = zkInfo;
+//							zkInfo.param = {layer:result.layerName,infomark:clickGraphic.attributes,servletcontext:this.servletcontext}
+//						}
+//						else if(result.layerName== "堤岸工程划分")
+//						{
+//							if(result.feature.attributes.TXGLH!=null)
+//							{
+//								var gcInfo:GCInfo = new GCInfo;
+//								
+//								map.infoWindow.content = gcInfo;
+//								gcInfo.param = {layer:layerName,txglh:result.feature.attributes.TXGLH,servletcontext:this.servletcontext};
+//							}
+//						}
+//						else if(result.layerName == "堤防实景照片")
+//						{
+//							if(result.feature.attributes[result.displayFieldName]!=null)
+//							{
+//								var pictureInfo:PictureInfo = new PictureInfo;
+//								map.infoWindow.content = pictureInfo;
+//								pictureInfo.param ={layer:result.layerName,tbzh:result.feature.attributes[result.displayFieldName],servletcontext:this.servletcontext}
+//							}
+//						}
 //						else
 //						{
 //							this.map.infoWindow.content = infoControl;
 //							infoControl.infomark = clickGraphic.attributes;
 //						}
 						
-						this.map.infoWindow.label = result.layerName+":"+ result.feature.attributes[result.displayFieldName];
+						if(layerXML!=null)
+							this.map.infoWindow.label = result.layerName+":"+ result.feature.attributes[layerXML.@titleField];
+						else
+							this.map.infoWindow.label = result.layerName+":"+ result.feature.attributes[result.displayFieldName];
 //						this.map.infoWindow.removeEventListener(MouseEvent.CLICK, windowShowHandler);
 //						this.map.infoWindow.addEventListener(MouseEvent.CLICK, windowShowHandler);
 //						if(infoControl.img!=null)

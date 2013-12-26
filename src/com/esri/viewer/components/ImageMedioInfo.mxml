@@ -49,7 +49,6 @@
 					if(fileext==".JPG")
 					{
 						imgurl ="http://10.23.108.104/attachment/排水口/" +String(jsonValues[i].filepath).replace(regE, "/");
-//						Alert.show(imgurl);
 					}
 					else if(fileext==".mp4")
 					{
